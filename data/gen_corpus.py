@@ -16,7 +16,7 @@ Generate the corpus to train word embedding
 import json
 from pathlib import Path
 # 所有段落数据都应纳入
-data_home_path = Path('./demo/trainset/')
+data_home_path = Path('./DuReaderDemo/')
 
 
 def gen_corpus(data_path):
