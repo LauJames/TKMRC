@@ -1,0 +1,35 @@
+# step 1
+git clone https://github.com/stanfordnlp/GloVe glove\
+
+# step 2
+make -C glove/
+
+# step 3
+ls glove/build/
+
+# step 4
+- 需要修改文件路径
+python3 gen_corpus.py
+
+# step 5
+- 构建词表vocab(注意参数修改路径)
+./glove/build/vocab_count -verbose 1 -max-vocab 500000 -min-count 1 < /temp/MRCcorpus > /temp/vocab.txt
+
+# step 6
+- 计算共现矩阵(注意参数修改路径)
+./glove/build/cooccur -verbose 1 -symmetric 0 -window-size 10 -vocab-file /temp/vocab.txt -memory 32.0 -overflow-file /temp/tempoverflow < /temp/MRCcorpus > /temp/cooccurrence.bin
+
+# step 7
+- shuffle(注意参数修改路径)
+./glove/build/shuffle -verbose 1 -temp-file /temp/temp -memory 32.0 < /temp/cooccurrence.bin > /temp/cooccurrence.shuf.bin
+
+# step 8
+- training word embedding(注意参数修改路径)
+./glove/build/glove -verbose 2 -input-file /temp/cooccurrence.shuf.bin -vocab-file /temp/vocab.txt -save-file /temp/vectors -binary 0 -model 2 -vector-size 200 -threads 12 -alpha 0.75 -x-max 100.0 -eta 0.05 -iter 60
+
+# step 9
+- 下载评估程序
+bash ./utils/download_thirdparty.sh
+
+# step 10
+- 
