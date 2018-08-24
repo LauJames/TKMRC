@@ -10,3 +10,8 @@ rouge_metric
 add_copyright.py
 copyright
 .DS_Store
+/data/temp/cooccurrence.bin
+/data/temp/cooccurrence.shuf.bin
+/data/temp/vectors.txt
+/data/temp/vocab.txt
+/data/temp/vocab.pkl

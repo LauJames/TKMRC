@@ -47,6 +47,7 @@ def segment_match_p_a(p_tokens, a_tokens):
     match = []
     # match from every start point
     for p_start, p_token in enumerate(p_tokens):
+        print(str(p_start) + ': ' + p_token)
         if p_token == a_tokens[0]:
             # 找到与a第一个符号（元素）一样的
             m = p_start + 1
@@ -54,7 +55,11 @@ def segment_match_p_a(p_tokens, a_tokens):
             # 记录这一段paragraph的tokens的mismatch分数
             mismatch = 0
             while True:
+                # print(p_token)
+                print(mismatch)
                 try:
+                    print('p_tokens:' + p_tokens[m])
+                    print('a_tokens:' + a_tokens[n])
                     if p_tokens[m] == a_tokens[n]:
                         m += 1
                         n += 1
@@ -187,6 +192,7 @@ def match_all_p_a(tokenized_paras, tokenized_answers, max_a_num=5):
     :param max_a_num:
     :return:
     """
+    # print(tokenized_paras)
     if not tokenized_answers:
         return []
     p_a_list = []
@@ -206,7 +212,7 @@ def match_all_p_a(tokenized_paras, tokenized_answers, max_a_num=5):
 
             spans = np.array(spans)
             max_match_span = spans[spans[:, 2].argmax()]
-            print(spans)
+            # print(spans)
             print('******************')
             # 分情况讨论
             # 1. 答案本身比较短，则必须是单个答案，并且接近完全匹配
@@ -234,7 +240,9 @@ def match_all_p_a(tokenized_paras, tokenized_answers, max_a_num=5):
             else:
                 target_span = sorted(candidate_spans, key=lambda i: i[1], reverse=True)[0]
                 target_span = [p_idx] + list(target_span)
-                p_a_list.append((p_idx, None, -2))
+                p_a_list.append(target_span)
+        else:
+            p_a_list.append((p_idx, None, -2))
 
     return p_a_list
 

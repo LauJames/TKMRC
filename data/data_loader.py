@@ -19,6 +19,8 @@ import logging
 import numpy as np
 
 from data.get_train_label import get_label
+from data.vocab_glove import Vocab
+import pickle
 
 
 class BRCDataset(object):
@@ -34,7 +36,7 @@ class BRCDataset(object):
 
         self.max_p_num = max_p_num
         self.max_a_num = 5
-        self.max_p_len = max_p_num
+        self.max_p_len = max_p_len
         self.max_q_len = max_q_len
         self.max_samples = max_samples
         self.skip_samples = skip_samples
@@ -65,17 +67,18 @@ class BRCDataset(object):
         with open(data_path, 'r') as f:
             data_set = []
             for line_idx, line in enumerate(f):
+                # print(f)
                 if line_idx > self.max_samples:
                     self.logger.info('Sample num reached the upper bound.')
                     break
                 if line_idx % 10000 == 0:
-                    self.logger.info('Already read {} samples.'.format(len(line_idx)))
+                    self.logger.info('Already read {} samples.'.format(line_idx))
                 if line_idx % self.skip_samples != self.skip_samples - 1:
                     continue
                 sample = json.loads(line.strip())
                 sample['question_tokens'] = sample['segmented_question']
                 sample['passage_list_tokens'] = []  # list of list
-                for d_idx, doc in enumerate(sample['document']):
+                for d_idx, doc in enumerate(sample['documents']):
                     if d_idx >= self.max_p_num:
                         break
                     para = []
@@ -101,7 +104,7 @@ class BRCDataset(object):
                         sample['start_id'] = answer_start
                         sample['end_id'] = answer_end
                         del sample['segmented_answers']
-                        del sample['fake_answer']
+                        del sample['fake_answers']
                         del sample['answer_docs']
                         del sample['answer_spans']
                         del sample['match_scores']
@@ -169,3 +172,52 @@ class BRCDataset(object):
         for batch_start in np.arange(0, data_size, batch_size):
             batch_indices = indices[batch_start: batch_start + batch_size]
             yield self._one_mini_batch(data, batch_indices)
+
+
+def main():
+    """
+    test the data loader
+    :return:
+    """
+    logger = logging.getLogger("BRC")
+    logger.info('Building vocabulary ...')
+    vocab = Vocab(lower=True)
+    vocab.prepare('./temp/vocab.txt')
+
+    logger.info('Saving vocab ...')
+
+    pkl_in = open('./temp/vocab.pkl', 'wb')
+    pickle.dump(vocab, pkl_in)
+
+    pkl_out = open('./temp/vocab.pkl', 'rb')
+    pickle.load(pkl_out)
+    train_batch_size = 32
+    infer_batch_size = 32
+
+    max_p_num = 5
+    max_p_len = 500
+    max_q_len = 60
+    max_samples = 100
+    skip_samples = 1
+    train_files = ['./DuReaderDemo/search.train.json']
+    dev_files = ['./DuReaderDemo/search.dev.json']
+    test_files = ['./DuReaderDemo/search.test.json']
+
+    brc_test_data = BRCDataset(
+        max_p_num=max_p_num,
+        max_p_len=max_p_len,
+        max_q_len=max_q_len,
+        vocab=vocab,
+        # train_files=train_files,
+        dev_files=dev_files,
+        # test_files=test_files,
+        train_batch_size=train_batch_size,
+        infer_batch_size=infer_batch_size,
+        max_samples=max_samples,
+        skip_samples=skip_samples
+    )
+    print(brc_test_data)
+
+
+if __name__ == '__main__':
+    main()
