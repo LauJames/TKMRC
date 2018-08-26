@@ -103,7 +103,7 @@ class BRCDataset(object):
                         sample['answer_doc'] = answer_doc
                         sample['start_id'] = answer_start
                         sample['end_id'] = answer_end
-                        del sample['segmented_answers']
+                        del sample['segmented_an已经存在swers']
                         del sample['fake_answers']
                         del sample['answer_docs']
                         del sample['answer_spans']
@@ -132,7 +132,7 @@ class BRCDataset(object):
             end_labels = []
             passage_list_tokens_ids = []
             question_token_ids = self.vocab.convert2ids(sample['question_tokens'])
-            for i, _ in enumerate(sample['passage_list_tokens']):
+            for j, _ in enumerate(sample['passage_list_tokens']):
                 passage_tokens_ids = self.vocab.convert2ids(_)
                 if passage_tokens_ids:
                     passage_list_tokens_ids.append(passage_tokens_ids)
@@ -143,7 +143,7 @@ class BRCDataset(object):
                     start_label = [[0.0]]
                     end_label = [[0.0]]
 
-                if 'answer_doc' in sample and sample['answer_doc'] == i:
+                if 'answer_doc' in sample and sample['answer_doc'] == j:
                     start_label[sample['start_id']] = [1.0]
                     end_label[sample['end_id']] = [1.0]
                 start_labels += start_label
@@ -171,7 +171,8 @@ class BRCDataset(object):
             np.random.shuffle(indices)
         for batch_start in np.arange(0, data_size, batch_size):
             batch_indices = indices[batch_start: batch_start + batch_size]
-            yield self._one_mini_batch(data, batch_indices)
+            # yield self._one_mini_batch(data, batch_indices)
+            return self._one_mini_batch(data, batch_indices)
 
 
 def main():

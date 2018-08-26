@@ -47,7 +47,7 @@ def segment_match_p_a(p_tokens, a_tokens):
     match = []
     # match from every start point
     for p_start, p_token in enumerate(p_tokens):
-        print(str(p_start) + ': ' + p_token)
+        # print(str(p_start) + ': ' + p_token)
         if p_token == a_tokens[0]:
             # 找到与a第一个符号（元素）一样的
             m = p_start + 1
@@ -56,7 +56,7 @@ def segment_match_p_a(p_tokens, a_tokens):
             mismatch = 0
             while True:
                 # print(p_token)
-                print(mismatch)
+                # print('mismatch:' + str(mismatch))
                 try:
                     print('p_tokens:' + p_tokens[m])
                     print('a_tokens:' + a_tokens[n])
@@ -106,6 +106,7 @@ def segment_match_p_a(p_tokens, a_tokens):
             # 减去标点符号导致的mismatch
             mismatch -= len(list(filter(lambda _: _ in '。，：；、.,;:', a_tokens)))
             match.append((p_start, m - 1, m - p_start, n - 1, mismatch))
+            print('match: ' + str(match))
             #  候选匹配区间信息
             # (p_start, p_end, len, a_end, mismatch)
     if not match:

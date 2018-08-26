@@ -14,6 +14,9 @@ Generate vocab from Glove Vectors.txt
 """
 
 import numpy as np
+import logging
+import pickle as pkl
+from sklearn.externals import joblib
 
 
 class Vocab(object):
@@ -34,12 +37,15 @@ class Vocab(object):
         """
         tokens = []
         embs = []
-        with open(filename, 'rb') as f:
+        with open(filename, 'r', encoding='utf-8') as f:
             content = f.readlines()
             for line in content:
-                line = line.split()
+                line = line.split(' ')  # 以空格分割，否则某些字符会干扰分割
                 tokens.append(line[0])
-                embs.append(line[1:])
+                print('tokens:' + str(line[0]))
+                embs.append(line[1])
+                print('embs dims:' + str(len(line[1:])))  # 也可以指定1：201
+                print('embs:' + str(line[1]))
 
         ids = list(range(len(tokens)))
         self.token2id = dict(zip(tokens, ids))
@@ -69,3 +75,28 @@ class Vocab(object):
         """
         vec = [self.get_id(label) for label in tokens]
         return vec
+
+
+def main():
+    """
+    test
+    :return:
+    """
+    logger = logging.getLogger('prepare')
+    logger.info('test the Building vocabulary...')
+    vocab = Vocab(lower=True)
+    vocab.prepare('./temp/vectors.txt')
+
+    logger.info('Saving vocab...')
+
+    # test_dump = open('./temp/test.pkl', 'wb')
+    # pkl.dump(vocab, test_dump)
+    # test_dump.close()
+
+    joblib.dump(vocab, './temp/test.pkl')
+
+    logger.info('Test done')
+
+
+if __name__ == '__main__':
+    main()
