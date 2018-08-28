@@ -19,9 +19,9 @@ This module finds the most related paragraph of each document according to recal
 """
 
 import sys
-if sys.version[0] == '2':
-    reload(sys)
-    sys.setdefaultencoding("utf-8")
+# if sys.version[0] == '2':
+#     reload(sys)
+#     sys.setdefaultencoding("utf-8")
 import json
 from collections import Counter
 
