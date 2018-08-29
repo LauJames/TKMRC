@@ -42,5 +42,28 @@ def gen_corpus(data_path):
         f.write(x)
 
 
+def tk_gen_corpus(data_path):
+    """
+    generate corpus for tk machine reading comprehension dataset
+    :param data_path:
+    :return:
+    """
+    x = []
+    for i in data_path.rglob('*.json'):
+        # Path.rglob():递归遍历所有子目录的文件---支持后缀匹配
+        print(i)
+        with i.open() as f:
+            for line in f:
+                item = json.loads(line)
+                for doc in item['documents']:
+                    for para in doc['segmented_paragraphs']:
+                        x.append(' '.join(para))
+                        x += '\n'
+    x = '\n'.join(x)
+    print(x)
+    with open('./temp/TKMRCCorpus', 'w+') as f:
+        f.write(x)
+
+
 if __name__ == '__main__':
     gen_corpus(data_home_path)
