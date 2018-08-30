@@ -16,3 +16,7 @@ copyright
 /data/temp/vocab.txt
 /data/temp/vocab.pkl
 /data/temp/test.pkl
+/data/temp/TKMRCCorpus
+/data/TKData/data0828.xlsx
+/data/TKData/tk_json.json
+/data/TKData/tk_json_cut.json

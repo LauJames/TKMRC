@@ -79,26 +79,31 @@ def excel2json_seg():
     # 答案ID	问题类型	问题	段落	答案
     dataframe = pd.read_excel(path,
                               sheet_name='Sheet1',
-                              usecols=[2, 3, 4],
+                              usecols=[1, 2, 3, 4],
                               header=0,
-                              dtype={'答案': str, '段落': str, '问题': str})
+                              dtype={'答案': str, '段落': str, '问题': str, '问题类型': str})
     paragraphs = []
     questions = []
     answers = []
+    question_type = []
+    tpye_dict = {"描述": "DESCRIPTION", "是否": "YES_NO", "实体": "ENTITY"}
 
     for key, data in dataframe.iterrows():  # 返回key, rows.values()
         paragraphs.append(data['段落'])
         questions.append(data['问题'])
         answers.append(data['答案'])
+        question_type.append(data['问题类型'])
 
     data_list = []
     for para, question, answer in zip(paragraphs, questions, answers):
+        question = question.replace('\n', '')
         paras_and_seg_json = [{"paragraphs": [text.replace('\n', '') for text in para.split('|')],
-                               "segmented_paragraphs": [cut2tokens(text) for text in para.split('|')]}]
+                               "segmented_paragraphs": [cut2tokens(text) for text in para.split('|')],
+                               "is_selected": True}]
         print(paras_and_seg_json)
         answers_json = [text for text in answer.split('|')]
         answers_seg_json = [cut2tokens(text) for text in answer.split('|')]
-        question_seg = [cut2tokens(token) for token in jieba.cut(question)]
+        question_seg = cut2tokens(question)
         item_json = {"question": question,
                      "segmented_question": question_seg,
                      "documents": paras_and_seg_json,
@@ -106,10 +111,76 @@ def excel2json_seg():
                      "segmented_answers": answers_seg_json}
         data_list.append(item_json)
     # print(data_list)
-    data_json = json.dumps(data_list, ensure_ascii=False)
+    # new line format
+    # data_json = json.dumps(data_list, ensure_ascii=False)
+    # with open('tk_json_cut.json', 'w', encoding='utf-8') as tk_json:
+    #     tk_json.write(str(data_list))
+    # print(data_json)
     with open('tk_json_cut.json', 'w', encoding='utf-8') as tk_json:
-        tk_json.write(data_json)
-    print(data_json)
+        for json_line in data_list:
+            data_json = json.dumps(json_line, ensure_ascii=False)
+            tk_json.write(str(data_json))
+            tk_json.write('\n')
+
+
+def excel2json_seg_4test():
+    """
+    input: excel files: 答案ID	问题类型	问题	段落	答案. all of them are string type
+    transform the raw data to json type according to the DuReader README.md "## Raw Data Format"
+    doesn't contain "is_selected" field
+    :return:
+    """
+
+    # 答案ID	问题类型	问题	段落	答案
+    dataframe = pd.read_excel(path,
+                              sheet_name='Sheet1',
+                              usecols=[1, 2, 3, 4],
+                              header=0,
+                              dtype={'答案': str, '段落': str, '问题': str, '问题类型': str})
+    paragraphs = []
+    questions = []
+    answers = []
+    question_type = []
+    type_dict = {"描述": "DESCRIPTION", "是否": "YES_NO", "实体": "ENTITY"}
+
+    for key, data in dataframe.iterrows():  # 返回key, rows.values()
+        paragraphs.append(data['段落'])
+        questions.append(data['问题'])
+        answers.append(data['答案'])
+        question_type.append(data['问题类型'])
+
+    data_list = []
+    for para, question, answer, q_type in zip(paragraphs, questions, answers, question_type):
+        question = question.replace('\n', '')
+        paras_and_seg_json = [{"paragraphs": [text.replace('\n', '') for text in para.split('|')],
+                               "segmented_paragraphs": [cut2tokens(text) for text in para.split('|')],
+                               "is_selected": True}]
+        print(paras_and_seg_json)
+
+        # question type
+        q_type_str = type_dict[q_type]
+
+        answers_json = [text for text in answer.split('|')]
+        answers_seg_json = [cut2tokens(text) for text in answer.split('|')]
+        question_seg = cut2tokens(question)
+        item_json = {"question": question,
+                     "question_type": q_type_str,
+                     "segmented_question": question_seg,
+                     "documents": paras_and_seg_json,
+                     "answers": answers_json,
+                     "segmented_answers": answers_seg_json}
+        data_list.append(item_json)
+    # print(data_list)
+    # new line format
+    # data_json = json.dumps(data_list, ensure_ascii=False)
+    # with open('tk_json_cut.json', 'w', encoding='utf-8') as tk_json:
+    #     tk_json.write(str(data_list))
+    # print(data_json)
+    with open('tk_json_cut.json', 'w', encoding='utf-8') as tk_json:
+        for json_line in data_list:
+            data_json = json.dumps(json_line, ensure_ascii=False)
+            tk_json.write(str(data_json))
+            tk_json.write('\n')
 
 
 def main():
