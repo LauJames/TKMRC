@@ -82,29 +82,48 @@ def excel2json_seg():
                               usecols=[1, 2, 3, 4],
                               header=0,
                               dtype={'答案': str, '段落': str, '问题': str, '问题类型': str})
+    # 删除任何包含nan的行数据
+    dataframe.dropna()
+
     paragraphs = []
     questions = []
     answers = []
     question_type = []
-    tpye_dict = {"描述": "DESCRIPTION", "是否": "YES_NO", "实体": "ENTITY"}
+    type_dict = {"描述": "DESCRIPTION", "是否": "YES_NO", "实体": "ENTITY"}
 
     for key, data in dataframe.iterrows():  # 返回key, rows.values()
-        paragraphs.append(data['段落'])
-        questions.append(data['问题'])
-        answers.append(data['答案'])
-        question_type.append(data['问题类型'])
+            paragraphs.append(data['段落'])
+            questions.append(data['问题'])
+            answers.append(data['答案'])
+            question_type.append(data['问题类型'])
 
     data_list = []
-    for para, question, answer in zip(paragraphs, questions, answers):
+    for idx, (para, question, answer, q_type) in enumerate(zip(paragraphs, questions, answers, question_type)):
+        try:
+            q_type_str = type_dict[q_type]
+        except KeyError as e:
+            print(e)
+            continue
+
         question = question.replace('\n', '')
         paras_and_seg_json = [{"paragraphs": [text.replace('\n', '') for text in para.split('|')],
                                "segmented_paragraphs": [cut2tokens(text) for text in para.split('|')],
                                "is_selected": True}]
         print(paras_and_seg_json)
+
+        # question type
+        # try:
+        #     q_type_str = type_dict[q_type]
+        # except KeyError as e:
+        #     print(e)
+        #     print(q_type)
+
         answers_json = [text for text in answer.split('|')]
         answers_seg_json = [cut2tokens(text) for text in answer.split('|')]
         question_seg = cut2tokens(question)
         item_json = {"question": question,
+                     "question_id": idx,
+                     "question_type": q_type_str,
                      "segmented_question": question_seg,
                      "documents": paras_and_seg_json,
                      "answers": answers_json,
@@ -150,11 +169,10 @@ def excel2json_seg_4test():
         question_type.append(data['问题类型'])
 
     data_list = []
-    for para, question, answer, q_type in zip(paragraphs, questions, answers, question_type):
+    for idx, para, question, answer, q_type in enumerate(zip(paragraphs, questions, answers, question_type)):
         question = question.replace('\n', '')
         paras_and_seg_json = [{"paragraphs": [text.replace('\n', '') for text in para.split('|')],
-                               "segmented_paragraphs": [cut2tokens(text) for text in para.split('|')],
-                               "is_selected": True}]
+                               "segmented_paragraphs": [cut2tokens(text) for text in para.split('|')]}]
         print(paras_and_seg_json)
 
         # question type
@@ -164,6 +182,7 @@ def excel2json_seg_4test():
         answers_seg_json = [cut2tokens(text) for text in answer.split('|')]
         question_seg = cut2tokens(question)
         item_json = {"question": question,
+                     "question_id": idx,
                      "question_type": q_type_str,
                      "segmented_question": question_seg,
                      "documents": paras_and_seg_json,

@@ -19,9 +19,9 @@ This module finds the most related paragraph of each document according to recal
 """
 
 import sys
-# if sys.version[0] == '2':
-#     reload(sys)
-#     sys.setdefaultencoding("utf-8")
+if sys.version[0] == '2':
+    reload(sys)
+    sys.setdefaultencoding("utf-8")
 import json
 from collections import Counter
 
@@ -212,7 +212,26 @@ def find_fake_answer(sample):
 
 
 if __name__ == '__main__':
-    for line in sys.stdin:
-        sample = json.loads(line)
-        find_fake_answer(sample)
-        print(json.dumps(sample, encoding='utf8', ensure_ascii=False))
+    # for line in sys.stdin:
+    #     sample = json.loads(line)
+    #     find_fake_answer(sample)
+    #     print(json.dumps(sample, encoding='utf8', ensure_ascii=False))
+    try:
+        # fo = open('../data/TKData/tk_processed.json', 'w', encoding='utf8')
+        # with open('../data/TKData/tk_json_cut.json', 'r') as fin:
+        fo = open('../data/TKData/tk_processed.json', 'w', encoding='utf8')
+        with open('../data/TKData/tk_json_cut.json', 'r') as fin:
+            samples = fin.readlines()
+            for line in samples:
+                sample = json.loads(line)
+                find_fake_answer(sample)
+                # print(sample['answer_spans'])
+                if sample['answer_spans']:  # 注意None 和 [] 的区别
+                    json_sample = json.dumps(sample, ensure_ascii=False)
+                    # print(str(json_sample))
+                    fo.write(str(json_sample))
+                    fo.write('\n')
+                else:
+                    continue
+    finally:
+        fo.close()

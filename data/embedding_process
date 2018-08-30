@@ -32,4 +32,20 @@ python3 gen_corpus.py
 bash ./utils/download_thirdparty.sh
 
 # step 10
-- 
+- 将数据处理成DuReader README.md 所展示的json格式(Raw 数据 + 分词)
+python3 TKData/processed_tk.py
+
+# step 11
+- 执行百度提出的answer span生成方案，将数据处理成最终可用于机器学习训练的格式
+cd ./tf_version
+python3 dataset.py
+
+# step 12
+- 开始训练数据准备
+python3 run.py --prepare
+
+# step 13
+- train
+python3 run.py --train
+
+...
