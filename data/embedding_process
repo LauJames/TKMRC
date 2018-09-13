@@ -8,16 +8,18 @@ make -C glove/
 ls glove/build/
 
 # step 4
-- 需要修改文件路径
+- 需要修改文件路径(在./data路径下执行)
+cd ./data/
 python3 gen_corpus.py
 
 # step 5
-- 构建词表vocab(注意参数修改路径)
-../../glove/build/vocab_count -verbose 1 -max-vocab 500000 -min-count 1 < ./data/temp/TKMRCcorpus > ./data/temp/vocab.txt
+- 构建词表vocab(注意参数修改路径， 回到TKMRC目录下)
+cd ..
+../../glove/build/vocab_count -verbose 1 -max-vocab 500000 -min-count 1 < ./data/temp/TKMRCCorpus > ./data/temp/vocab.txt
 
 # step 6
 - 计算共现矩阵(注意参数修改路径)
-../../glove/build/cooccur -verbose 1 -symmetric 0 -window-size 10 -vocab-file ./data/temp/vocab.txt -memory 32.0 -overflow-file ./data/temp/tempoverflow < ./data/temp/MRCcorpus > ./data/temp/cooccurrence.bin
+../../glove/build/cooccur -verbose 1 -symmetric 0 -window-size 10 -vocab-file ./data/temp/vocab.txt -memory 32.0 -overflow-file ./data/temp/tempoverflow < ./data/temp/TKMRCCorpus > ./data/temp/cooccurrence.bin
 
 # step 7
 - shuffle(注意参数修改路径)
@@ -33,15 +35,17 @@ bash ./utils/download_thirdparty.sh
 
 # step 10
 - 将数据处理成DuReader README.md 所展示的json格式(Raw 数据 + 分词)
-python3 TKData/processed_tk.py
+cd ./data/TKData
+python3 processed_tk.py
 
 # step 11
 - 执行百度提出的answer span生成方案，将数据处理成最终可用于机器学习训练的格式
-cd ./tf_version
-python3 dataset.py
+cd ../../utils/
+python3 preprocess.py
 
 # step 12
 - 开始训练数据准备
+cd ../tf_version
 python3 run.py --prepare
 
 # step 13

@@ -16,6 +16,8 @@ import os
 import pickle
 import argparse
 import logging
+import json
+from collections import Counter
 from data.data_loader import BRCDataset
 from data.vocab_glove import Vocab
 
@@ -92,3 +94,14 @@ def parse_args():
 
     return parser.parse_args()
 
+
+def list_test():
+    dict1 = Counter(a=1, b=2, c=1)
+    dict2 = Counter(a=2, b=2, d=1)
+    common = dict1 & dict2
+    n_sum = sum(common.values())
+    print(n_sum)
+
+
+if __name__ == '__main__':
+    list_test()

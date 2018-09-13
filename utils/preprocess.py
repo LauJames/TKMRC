@@ -17,13 +17,13 @@
 """
 This module finds the most related paragraph of each document according to recall.
 """
-
-import sys
-if sys.version[0] == '2':
-    reload(sys)
-    sys.setdefaultencoding("utf-8")
 import json
+import importlib
+import sys
 from collections import Counter
+if sys.version[0] == '2':
+    importlib.reload(sys)
+    sys.setdefaultencoding("utf-8")
 
 
 def precision_recall_f1(prediction, ground_truth):
@@ -37,7 +37,7 @@ def precision_recall_f1(prediction, ground_truth):
     Raises:
         None
     """
-    if not isinstance(prediction, list):
+    if not isinstance(prediction, list):  # 不属于list类（isinstance考虑继承属性，认为子类和父类不同; type不考虑继承 ）
         prediction_tokens = prediction.split()
     else:
         prediction_tokens = prediction
@@ -45,7 +45,7 @@ def precision_recall_f1(prediction, ground_truth):
         ground_truth_tokens = ground_truth.split()
     else:
         ground_truth_tokens = ground_truth
-    common = Counter(prediction_tokens) & Counter(ground_truth_tokens)
+    common = Counter(prediction_tokens) & Counter(ground_truth_tokens)  # Counter实现了运算符重载，这里求交集
     num_same = sum(common.values())
     if num_same == 0:
         return 0, 0, 0
@@ -120,9 +120,8 @@ def find_best_question_match(doc, question, with_score=False):
     most_related_para_len = 0
     for p_idx, para_tokens in enumerate(doc['segmented_paragraphs']):
         if len(question) > 0:
-            related_score = metric_max_over_ground_truths(recall,
-                    para_tokens,
-                    question)
+            related_score = metric_max_over_ground_truths(recall, para_tokens, question)
+            # 以recall为标准，找出和问题最佳匹配的段落
         else:
             related_score = 0
 
@@ -160,6 +159,7 @@ def find_fake_answer(sample):
                 related_score = metric_max_over_ground_truths(recall,
                                                               para_tokens,
                                                               sample['segmented_answers'])
+                # 以recall为标准，根据答案寻找最佳匹配段落
             else:
                 continue
             if related_score > max_related_score \
@@ -195,6 +195,7 @@ def find_fake_answer(sample):
                 if len(sample['segmented_answers']) > 0:
                     match_score = metric_max_over_ground_truths(f1_score, span_tokens,
                                                                 sample['segmented_answers'])
+                    # 在找出的段落tokens list，以最大化f1为标准，找出和答案最相关的span定位
                 else:
                     match_score = 0
                 if match_score == 0:
