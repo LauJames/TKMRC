@@ -37,6 +37,10 @@ def precision_recall_f1(prediction, ground_truth):
     Raises:
         None
     """
+
+    # 基于Bool检索的方法
+    # Prediction -- paragraph
+    # ground_truth -- question
     if not isinstance(prediction, list):  # 不属于list类（isinstance考虑继承属性，认为子类和父类不同; type不考虑继承 ）
         prediction_tokens = prediction.split()
     else:

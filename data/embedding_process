@@ -34,7 +34,7 @@ cd ..
 bash ./utils/download_thirdparty.sh
 
 # step 10
-- 将数据处理成DuReader README.md 所展示的json格式(Raw 数据 + 分词)
+- 将数据处理成DuReader README. md 所展示的json格式(Raw 数据 + 分词)
 cd ./data/TKData
 python3 processed_tk.py
 
