@@ -11,3 +11,25 @@
 @Software : PyCharm
 @Copyright: "Copyright (c) 2018 Lau James. All Rights Reserved"
 """
+
+from elasticsearch import Elasticsearch
+
+
+class Config(object):
+    def __init__(self):
+        print("config...")
+        self.es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+        self.index_name = "mrc"
+        self.doc_type = "paragraph"
+        # test
+        file_path = "../data/DuReaderDemo/search.dev.json"
+        self.doc_path = file_path
+        # self.doc_path = '../data/mergeData/merge.all.json'
+
+
+def main():
+    Config()
+
+
+if __name__ == '__main__':
+    main()
