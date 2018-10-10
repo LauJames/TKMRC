@@ -22,7 +22,8 @@ class Search(object):
         logging.basicConfig(level=logging.DEBUG,
                             format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
 
-    def search_by_question(self, question, top_n, config):
+    @staticmethod
+    def search_by_question(question, top_n, config):
         """
         Search candidate paragraphs
         :param question:
@@ -30,15 +31,17 @@ class Search(object):
         :param config:
         :return:
         """
-        q = {"query":
-                 {"bool":
-                      {"must":
-                           {"match":
-                                {"paragraph": question}
-                            }
-                       }
-                  }
-             }
+        q = {
+            "query": {
+                "multi_match": {
+                    "query": question,
+                    "fields": ["title^2", "paragraph"],
+                    "fuzziness": "AUTO"
+                }
+            },
+            # "_source": ["title", "paragraph"],
+            # "size": 3
+        }
 
         count = 0
         while count < 5:
@@ -49,7 +52,7 @@ class Search(object):
                 result = []
                 for data in topn:
                     if count < top_n:
-                        result.append(data['_source']['paragraph'])
+                        result.append((data['_source']['title'], data['_source']['paragraph']))
                         count += 1
                 return result
             except:
@@ -64,10 +67,10 @@ class Search(object):
 def main():
     config = Config()
     search = Search()
-    query = "小说排行榜第一位是哪本小说？"
+    query = "围棋多少颗子？"
     result = search.search_by_question(query, 3, config)
     for data in result:
-        print(data)
+        print(data[0], data[1])
 
 
 if __name__ == '__main__':

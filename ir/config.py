@@ -22,9 +22,9 @@ class Config(object):
         self.index_name = "mrc"
         self.doc_type = "paragraph"
         # test
-        file_path = "../data/DuReaderDemo/search.dev.json"
+        # file_path = "../data/DuReaderDemo/search.dev.json"
+        file_path = '../data/mergeData/merge.all.json'
         self.doc_path = file_path
-        # self.doc_path = '../data/mergeData/merge.all.json'
 
 
 def main():

@@ -20,7 +20,6 @@ import logging
 import json
 
 
-
 class Index(object):
     def __init__(self):
         print("Indexing...")
@@ -30,7 +29,7 @@ class Index(object):
     @staticmethod
     def data_convert(file_path="../data/DuReaderDemo/search.dev.json"):
         """
-        Data convert program for Baidu's DuReader
+        Data convert program for Baidu's DuReader raw json data
         :param file_path:
         :return:
         """
@@ -47,13 +46,16 @@ class Index(object):
                     # question_type = line["question_type"]
                     # segmented_question = ' '.join(token for token in line["segmented_question"])
                     # paras = document["segmented_paragraphs"]
-                    for idx, paras_seg in enumerate(document["segmented_paragraphs"]):
-                        paragraph = ' '.join(token for token in paras_seg)
+                    para_list = document["paragraphs"]
+                    title = ' '.join(token for token in jieba.cut(document["title"].strip()))
+                    for para in para_list:
+                        paragraph = ' '.join(token for token in jieba.cut(para.strip()))
+                        print('title: ' + title)
                         print('paragraph: ' + paragraph)
-                        paras[para_id] = {'paragraph': paragraph}
+                        paras[para_id] = {'title': title, 'paragraph': paragraph}
                         para_id += 1
                 line = f.readline()
-        logging.info(str(para_id) + ' paragraphs loaded!')
+        logging.info(str(para_id) + 'title and paragraphs loaded!')
         return paras
 
     @staticmethod
@@ -78,6 +80,18 @@ class Index(object):
             "mappings": {
                 config.index_name: {
                     "properties": {
+                        "title": {
+                            "type": "text",
+                            "term_vector": "with_positions_offsets_payloads",
+                            # 支持参数yes（term存储），
+                            # with_positions（term + 位置）,
+                            # with_offsets（term + 偏移量），
+                            # with_positions_offsets(term + 位置 + 偏移量)
+                            # 对快速高亮fast vector highlighter能提升性能，但开启又会加大索引体积，不适合大数据量用
+                            "store": True,
+                            "analyzer": "standard",
+                            "similarity": "LM"
+                        },
                         "paragraph": {
                             "type": "text",
                             "term_vector": "with_positions_offsets_payloads",
