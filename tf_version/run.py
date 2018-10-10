@@ -134,7 +134,8 @@ def prepare(args):
                                                                             vocab.size()))
 
     logger.info('Assigning embeddings...')
-    # 可以采用预训练的词向量  load_pretrained_embeddings
+    # 可以采用预训练的词向量
+    # vocab.load_pretrained_embeddings('../data/temp/vectors.txt')
     vocab.randomly_init_embeddings(args.embed_size)
 
     logger.info('Saving vocab...')

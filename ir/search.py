@@ -68,9 +68,10 @@ def main():
     config = Config()
     search = Search()
     query = "围棋多少颗子？"
-    result = search.search_by_question(query, 3, config)
+    result = search.search_by_question(query, 1, config)
     for data in result:
         print(data[0], data[1])
+    print(result[0][1])
 
 
 if __name__ == '__main__':
