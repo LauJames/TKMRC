@@ -19,13 +19,14 @@ import jieba
 import logging
 import json
 
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
+
 
 class Index(object):
     def __init__(self):
         print("Indexing...")
-        self.logger = logging.getLogger('indexing')
-        self.logger.basicConfig(level=logging.DEBUG,
-                            format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
+        self.logger_index = logging.getLogger('indexing')
 
     def data_convert(self, file_path="../data/DuReaderDemo/search.dev.json"):
         """
@@ -33,7 +34,7 @@ class Index(object):
         :param file_path:
         :return:
         """
-        self.logger.info("convert raw json data into single doc")
+        self.logger_index.info("convert raw json data into single doc")
         paras = {}
         para_id = 0
         with open(file_path, 'r') as f:
@@ -55,7 +56,7 @@ class Index(object):
                         paras[para_id] = {'title': title, 'paragraph': paragraph}
                         para_id += 1
                 line = f.readline()
-        self.logger.info(str(para_id) + 'title and paragraphs loaded!')
+        self.logger_index.info(str(para_id) + 'title and paragraphs loaded!')
         return paras
 
     def create_index(self, config):
@@ -64,7 +65,7 @@ class Index(object):
         :param config:
         :return:
         """
-        self.logger.info("creating '%s' index..." % config.index_name)
+        self.logger_index.info("creating '%s' index..." % config.index_name)
         request_body = {
             "settings": {
                 "number_of_shards": 1,
@@ -105,8 +106,8 @@ class Index(object):
         # 删除先前的索引
         config.es.indices.delete(index=config.index_name, ignore=[400, 404])
         res = config.es.indices.create(index=config.index_name, body=request_body)
-        self.logger.info(res)
-        self.logger.info("Indices are created successfully")
+        self.logger_index.info(res)
+        self.logger_index.info("Indices are created successfully")
 
     def bulk_index(self, paras, bulk_size, config):
         """
@@ -116,7 +117,7 @@ class Index(object):
         :param config:
         :return:
         """
-        self.logger.info("Bulk index for paragraphs")
+        self.logger_index.info("Bulk index for paragraphs")
         count = 1
         actions = []
         for para_id, para in paras.items():
@@ -132,12 +133,12 @@ class Index(object):
 
             if len(actions) % bulk_size == 0:
                 helpers.bulk(config.es, actions)
-                self.logger.info("bulk index: " + str(count))
+                self.logger_index.info("bulk index: " + str(count))
                 actions = []
 
         if len(actions) > 0:
             helpers.bulk(config.es, actions)
-            self.logger.info("bulk index: " + str(count))
+            self.logger_index.info("bulk index: " + str(count))
 
 
 def main():

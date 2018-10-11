@@ -14,16 +14,16 @@
 
 from ir.config import Config
 import logging
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
 
 
 class Search(object):
     def __init__(self):
         print("Searching...")
-        logging.basicConfig(level=logging.DEBUG,
-                            format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
+        self.logger_search = logging.getLogger('searching')
 
-    @staticmethod
-    def search_by_question(question, top_n, config):
+    def search_by_question(self, question, top_n, config):
         """
         Search candidate paragraphs
         :param question:
@@ -56,11 +56,11 @@ class Search(object):
                         count += 1
                 return result
             except:
-                logging.info("Try again!")
+                self.logger_search.info("Try again!")
                 count += 1
                 continue
 
-        logging.info("ReadTimeOutError may not be covered!")
+        self.logger_search.info("ReadTimeOutError may not be covered!")
         return []
 
 

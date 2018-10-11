@@ -26,6 +26,10 @@ import argparse
 import os
 import tensorflow as tf
 
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s',
+                    filename='./test_log/test.log')
+
 
 def path_arg4test():
     """
@@ -79,9 +83,6 @@ if __name__ == '__main__':
     search = Search()
     args = path_arg4test()
 
-    logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s',
-                        filename='./test_log/test.log')
     logger = logging.getLogger('test')
 
     # load vocab
