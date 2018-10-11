@@ -89,10 +89,17 @@ if __name__ == '__main__':
     logger.info('Loading vocab...')
     with open(os.path.join(args.vocab_dir, 'vocab.data'), 'rb') as fin:
         vocab = pickle.load(fin)
+
+    logger.info('Demo Testing...')
+    test_query = "围棋有多少颗棋子?"
+    result = search.search_by_question(test_query, 3, ir_config)
+
+    passage_para = result[0][1]
+    test_query_seg = [token for token in jieba.cut(test_query)]
+    paragraph_seg = [token for token in jieba.cut(passage_para)]
+    brc_data = BRCDataset(args.max_p_num, args.max_p_len, args.max_q_len, demo_string=[test_query_seg, paragraph_seg])
+
     logger.info('Restoring the model...')
     rc_model = RCModel(vocab, args)
     rc_model.restore(model_dir=args.model_dir, model_prefix=args.algo)
-    logger.info('Testing...')
-    test_query = "围棋有多少颗棋子?"
-    result = search.search_by_question(test_query, 1, ir_config)
-    passage_para = result[0][1]
+
