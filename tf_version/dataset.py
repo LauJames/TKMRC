@@ -137,7 +137,7 @@ class BRCDataset(object):
                     batch_data['question_length'].append(0)
                     batch_data['passage_token_ids'].append([])
                     batch_data['passage_length'].append(0)
-        batch_data, padded_p_len, padded_q_len = self._dynamic_padding(batch_data, pad_id)
+        batch_data, padded_p_len, padded_q_len = self.dynamic_padding(batch_data, pad_id)
         for sample in batch_data['raw_data']:
             if 'answer_passages' in sample and len(sample['answer_passages']):
                 gold_passage_offset = padded_p_len * sample['answer_passages'][0]
@@ -149,7 +149,7 @@ class BRCDataset(object):
                 batch_data['end_id'].append(0)
         return batch_data
 
-    def _dynamic_padding(self, batch_data, pad_id):
+    def dynamic_padding(self, batch_data, pad_id):
         """
         Dynamically pads the batch_data with pad_id
         """

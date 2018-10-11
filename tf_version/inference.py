@@ -93,13 +93,30 @@ if __name__ == '__main__':
     logger.info('Demo Testing...')
     test_query = "围棋有多少颗棋子?"
     result = search.search_by_question(test_query, 3, ir_config)
-
     passage_para = result[0][1]
     test_query_seg = [token for token in jieba.cut(test_query)]
     paragraph_seg = [token for token in jieba.cut(passage_para)]
+    query_ids = [vocab.get_id(label) for label in paragraph_seg]
+    para_ids = [vocab.get_id(label) for label in test_query_seg]
     brc_data = BRCDataset(args.max_p_num, args.max_p_len, args.max_q_len, demo_string=[test_query_seg, paragraph_seg])
+
+    # padding
+    pad_id = vocab.get_id(vocab.pad_token)
+    pad_p_len = min(args.max_p_len, len(paragraph_seg))
+    pad_q_len = min(args.max_q_len, len(test_query_seg))
+    query_ids = [(ids + [pad_id] * (pad_p_len - len(ids)))[: pad_p_len] for ids in query_ids]
+    para_ids = [(ids + [pad_id] * (pad_q_len - len(ids)))[: pad_q_len] for ids in para_ids]
 
     logger.info('Restoring the model...')
     rc_model = RCModel(vocab, args)
     rc_model.restore(model_dir=args.model_dir, model_prefix=args.algo)
 
+    feed_dict = {
+        rc_model.p: query_ids,
+        rc_model.q: para_ids,
+        rc_model.p_length: pad_p_len,
+        rc_model.q_length: pad_q_len,
+        rc_model.start_label: [0],
+        rc_model.end_label: [0],
+        rc_model.dropout_keep_prob: 1.0}
+    start_probs, end_probs = rc_model.sess.run([rc_model.start_probs, rc_model.end_probs], feed_dict)
