@@ -1,22 +1,17 @@
-###############################################################################
-# ==============================================================================
-# Copyright 2017 Baidu.com, Inc. All Rights Reserved
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
+#! /user/bin/evn python
+# -*- coding:utf8 -*-
+
 """
-This module finds the most related paragraph of each document according to recall.
+
+@Author   : Lau James
+@Contact  : LauJames2017@whu.edu.cn
+@Project  : TKMRC 
+@File     : preprocess4tk.py
+@Time     : 18-10-12 下午2:41
+@Software : PyCharm
+@Copyright: "Copyright (c) 2018 Lau James. All Rights Reserved"
 """
+
 import json
 import importlib
 import sys
@@ -217,26 +212,26 @@ def find_fake_answer(sample):
 
 
 if __name__ == '__main__':
-    for line in sys.stdin:
-        sample = json.loads(line)
-        find_fake_answer(sample)
-        print(json.dumps(sample, encoding='utf8', ensure_ascii=False))
-    # try:
-    #     # fo = open('../data/TKData/tk_processed.json', 'w', encoding='utf8')
-    #     # with open('../data/TKData/tk_json_cut.json', 'r') as fin:
-    #     fo = open('../data/TKData/tk_processed.json', 'w', encoding='utf8')
-    #     with open('../data/TKData/tk_json_cut.json', 'r') as fin:
-    #         samples = fin.readlines()
-    #         for line in samples:
-    #             sample = json.loads(line)
-    #             find_fake_answer(sample)
-    #             # print(sample['answer_spans'])
-    #             if sample['answer_spans']:  # 注意None 和 [] 的区别
-    #                 json_sample = json.dumps(sample, ensure_ascii=False)
-    #                 # print(str(json_sample))
-    #                 fo.write(str(json_sample))
-    #                 fo.write('\n')
-    #             else:
-    #                 continue
-    # finally:
-    #     fo.close()
+    # for line in sys.stdin:
+    #     sample = json.loads(line)
+    #     find_fake_answer(sample)
+    #     print(json.dumps(sample, encoding='utf8', ensure_ascii=False))
+    try:
+        # fo = open('../data/TKData/tk_processed.json', 'w', encoding='utf8')
+        # with open('../data/TKData/tk_json_cut.json', 'r') as fin:
+        fo = open('../data/TKData/tk_processed.json', 'w', encoding='utf8')
+        with open('../data/TKData/tk_json_cut.json', 'r') as fin:
+            samples = fin.readlines()
+            for line in samples:
+                sample = json.loads(line)
+                find_fake_answer(sample)
+                # print(sample['answer_spans'])
+                if sample['answer_spans']:  # 注意None 和 [] 的区别
+                    json_sample = json.dumps(sample, ensure_ascii=False)
+                    # print(str(json_sample))
+                    fo.write(str(json_sample))
+                    fo.write('\n')
+                else:
+                    continue
+    finally:
+        fo.close()

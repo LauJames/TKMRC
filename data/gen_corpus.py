@@ -16,7 +16,7 @@ Generate the corpus to train word embedding
 import json
 from pathlib import Path
 # 所有段落数据都应纳入
-data_home_path = Path('./DuReaderDemo/')
+data_home_path = Path('./merge_processed/')
 data_home_path_tk = Path('./TKData/')
 
 
@@ -67,4 +67,5 @@ def tk_gen_corpus(data_path):
 
 
 if __name__ == '__main__':
-    tk_gen_corpus(data_home_path)
+    # tk_gen_corpus(data_home_path)
+    gen_corpus(data_home_path)

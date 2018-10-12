@@ -19,11 +19,11 @@ cd ..
 
 # step 6
 - 计算共现矩阵(注意参数修改路径)
-../../glove/build/cooccur -verbose 1 -symmetric 0 -window-size 10 -vocab-file ./data/temp/vocab.txt -memory 32.0 -overflow-file ./data/temp/tempoverflow < ./data/temp/TKMRCCorpus > ./data/temp/cooccurrence.bin
+../../glove/build/cooccur -verbose 1 -symmetric 0 -window-size 10 -vocab-file ./data/temp/vocab.txt -memory 16.0 -overflow-file ./data/temp/tempoverflow < ./data/temp/TKMRCCorpus > ./data/temp/cooccurrence.bin
 
 # step 7
 - shuffle(注意参数修改路径)
-../../glove/build/shuffle -verbose 1 -temp-file ./data/temp/temp -memory 32.0 < ./data/temp/cooccurrence.bin > ./data/temp/cooccurrence.shuf.bin
+../../glove/build/shuffle -verbose 1 -temp-file ./data/temp/temp -memory 16.0 < ./data/temp/cooccurrence.bin > ./data/temp/cooccurrence.shuf.bin
 
 # step 8
 - training word embedding(注意参数修改路径)

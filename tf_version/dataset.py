@@ -30,7 +30,7 @@ class BRCDataset(object):
     This module implements the APIs for loading and using baidu reading comprehension dataset
     """
     def __init__(self, max_p_num, max_p_len, max_q_len,
-                 train_files=[], dev_files=[], test_files=[], demo_string=[]):
+                 train_files=[], dev_files=[], test_files=[], demo_string=[[], []]):
         self.logger = logging.getLogger("brc")
         self.max_p_num = max_p_num
         self.max_p_len = max_p_len
@@ -54,8 +54,8 @@ class BRCDataset(object):
 
         if demo_string[1]:
             self.test_set = [{'question_tokens': demo_string[0], 'passages': {'passage_tokens': demo_string[1]}}]
-            self.logger.info('Demo question: ' + demo_string[0] +
-                             '\nDemo passages: ' + demo_string[1])
+            self.logger.info('Demo question: ' + ' '.join(token for token in demo_string[0]) +
+                             '\nDemo passages: ' + ' '.join(token for token in demo_string[1]))
 
     def _load_dataset(self, data_path, train=False):
         """

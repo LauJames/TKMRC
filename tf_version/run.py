@@ -81,7 +81,7 @@ def parse_args():
     path_settings = parser.add_argument_group('path settings')
     path_settings.add_argument('--train_files', nargs='+',
                                # default=['../data/demo/trainset/search.train.json'],
-                               default=['../data/TKData/tk_processed.json'],
+                               default=['../data/mergeData/tk_processed.json'],
                                help='list of files that contain the preprocessed train data')
     path_settings.add_argument('--dev_files', nargs='+',
                                # default=['../data/demo/devset/search.dev.json'],
@@ -92,7 +92,7 @@ def parse_args():
                                default=['../data/TKData/tk_processed.json'],
                                help='list of files that contain the preprocessed test data')
     # path_settings.add_argument('--brc_dir', default='../data/baidu',
-    path_settings.add_argument('--brc_dir', default='../data/tk',
+    path_settings.add_argument('--brc_dir', default='../data/mergeData',
                                help='the dir with preprocessed baidu reading comprehension data')
     path_settings.add_argument('--vocab_dir', default='../data/vocab/',
                                help='the dir to save vocabulary')
