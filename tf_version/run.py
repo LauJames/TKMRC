@@ -81,18 +81,21 @@ def parse_args():
     path_settings = parser.add_argument_group('path settings')
     path_settings.add_argument('--train_files', nargs='+',
                                # default=['../data/demo/trainset/search.train.json'],
-                               default=['../data/mergeData/tk_processed.json'],
+                               # default=['../data/mergeData/tk_processed.json'],
+                               default=['../data/merge_processed/merge_processed.train.json'],
                                help='list of files that contain the preprocessed train data')
     path_settings.add_argument('--dev_files', nargs='+',
                                # default=['../data/demo/devset/search.dev.json'],
-                               default=['../data/TKData/tk_processed.json'],
+                               # default=['../data/TKData/tk_processed.json'],
+                               default=['../data/merge_processed/merge_processed.dev.json'],
                                help='list of files that contain the preprocessed dev data')
     path_settings.add_argument('--test_files', nargs='+',
                                # default=['../data/demo/testset/search.test.json'],
-                               default=['../data/TKData/tk_processed.json'],
+                               # default=['../data/TKData/tk_processed.json'],
+                               default=['../data/merge_processed/merge_processed.test.json'],
                                help='list of files that contain the preprocessed test data')
     # path_settings.add_argument('--brc_dir', default='../data/baidu',
-    path_settings.add_argument('--brc_dir', default='../data/mergeData',
+    path_settings.add_argument('--brc_dir', default='../data/merge_processed',
                                help='the dir with preprocessed baidu reading comprehension data')
     path_settings.add_argument('--vocab_dir', default='../data/vocab/',
                                help='the dir to save vocabulary')
@@ -135,8 +138,8 @@ def prepare(args):
 
     logger.info('Assigning embeddings...')
     # 可以采用预训练的词向量
-    # vocab.load_pretrained_embeddings('../data/temp/vectors.txt')
-    vocab.randomly_init_embeddings(args.embed_size)
+    vocab.load_pretrained_embeddings('../data/temp/vectors.txt')
+    # vocab.randomly_init_embeddings(args.embed_size)
 
     logger.info('Saving vocab...')
     with open(os.path.join(args.vocab_dir, 'vocab.data'), 'wb') as fout:
