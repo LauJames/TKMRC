@@ -26,3 +26,5 @@ copyright
 /data/results/
 /data/merge_processed/
 /data/temp/MRCcorpus
+/data/zhidao/
+/tf_version/train.log

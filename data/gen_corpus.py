@@ -16,7 +16,7 @@ Generate the corpus to train word embedding
 import json
 from pathlib import Path
 # 所有段落数据都应纳入
-data_home_path = Path('./merge_processed/')
+data_home_path = Path('./zhidao/')
 data_home_path_tk = Path('./TKData/')
 
 

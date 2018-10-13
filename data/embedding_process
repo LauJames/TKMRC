@@ -13,13 +13,13 @@ cd ./data/
 python3 gen_corpus.py
 
 # step 5
-- 构建词表vocab(注意参数修改路径， 回到TKMRC目录下)
+- 构建词表vocab(注意参数修改路径， 回到TKMRC目录下; verbose 1:表示忽略， 2表示展示过程)
 cd ..
-../../glove/build/vocab_count -verbose 1 -max-vocab 500000 -min-count 1 < ./data/temp/TKMRCCorpus > ./data/temp/vocab.txt
+../../glove/build/vocab_count -verbose 2 -max-vocab 500000 -min-count 1 < ./data/temp/TKMRCCorpus > ./data/temp/vocab.txt
 
 # step 6
 - 计算共现矩阵(注意参数修改路径)
-../../glove/build/cooccur -verbose 1 -symmetric 0 -window-size 10 -vocab-file ./data/temp/vocab.txt -memory 16.0 -overflow-file ./data/temp/tempoverflow < ./data/temp/TKMRCCorpus > ./data/temp/cooccurrence.bin
+../../glove/build/cooccur -verbose 2 -symmetric 0 -window-size 10 -vocab-file ./data/temp/vocab.txt -memory 16.0 -overflow-file ./data/temp/tempoverflow < ./data/temp/TKMRCCorpus > ./data/temp/cooccurrence.bin
 
 # step 7
 - shuffle(注意参数修改路径)
