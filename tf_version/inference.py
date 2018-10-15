@@ -94,6 +94,7 @@ if __name__ == '__main__':
     test_query = "围棋有多少颗棋子?"
     result = search.search_by_question(test_query, 3, ir_config)
     passage_para = result[0][1]
+    passage_para = passage_para.replace(' ', '')
     test_query_seg = [token for token in jieba.cut(test_query)]
     paragraph_seg = [token for token in jieba.cut(passage_para)]
     query_ids = [[vocab.get_id(label) for label in test_query_seg]]
@@ -115,12 +116,15 @@ if __name__ == '__main__':
     feed_dict = {
         rc_model.q: query_ids,
         rc_model.p: para_ids,
-        rc_model.q_length: [len(query_ids)],
-        rc_model.p_length: [len(para_ids)],
+        rc_model.q_length: [len(query_ids[0])],
+        rc_model.p_length: [len(para_ids[0])],
         rc_model.start_label: [0],
-        rc_model.end_label: [0],
+        # rc_model.end_label: [0],
         rc_model.dropout_keep_prob: 1.0}
     start_probs, end_probs = rc_model.sess.run([rc_model.start_probs, rc_model.end_probs], feed_dict)
-    answer_span, max_prob = rc_model.find_best_answer_for_passage(start_probs[0], end_probs[0], len(paragraph_seg))
+    # answer_span, max_prob = rc_model.find_best_answer_for_passage(start_probs[0], end_probs[0], len(paragraph_seg))
+    sample = {"passages": [{"passage_tokens": paragraph_seg}]}
+    answer_span = rc_model.find_best_answer(sample, start_probs[0], end_probs[0], len(paragraph_seg))
     print("Question: " + test_query)
-    print("Answer: " + ''.join(token for token in paragraph_seg[answer_span[0]:answer_span[1]]))
+    # print("Answer: " + ''.join(token for token in paragraph_seg[answer_span[0]:answer_span[1]]))
+    print("Answer: " + ''.join(token for token in answer_span))
