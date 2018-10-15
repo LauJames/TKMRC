@@ -24,11 +24,14 @@ import jieba
 import pickle
 import argparse
 import os
+import time
 import tensorflow as tf
 
+now_date = time.strftime("%Y_%m_%d")
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s',
-                    filename='./test_log/test.log')
+                    filename='./log/%s' % (now_date+'infer.log'),
+                    filemode='w')
 
 
 def path_arg4test():
@@ -73,29 +76,16 @@ def path_arg4test():
                               help='the dir to save vocabulary')
     path_setting.add_argument('--model_dir', default='../data/models/',
                               help='the dir to store models')
-    path_setting.add_argument('--log_path', default='./test_log/test.log',
+    path_setting.add_argument('--log_path', default='./log/test.log',
                               help='path of the log file. If not set, logs are print to console ')
     return parser.parse_args()
 
 
-if __name__ == '__main__':
-    ir_config = Config()
-    search = Search()
-    args = path_arg4test()
-
-    logger = logging.getLogger('test')
-
-    # load vocab
-    logger.info('Loading vocab...')
-    with open(os.path.join(args.vocab_dir, 'vocab.data'), 'rb') as fin:
-        vocab = pickle.load(fin)
-
-    logger.info('Demo Testing...')
-    test_query = "围棋有多少颗棋子?"
-    result = search.search_by_question(test_query, 3, ir_config)
+def infer(query, vocab, search, ir_config, args, model):
+    result = search.search_by_question(query, 3, ir_config)
     passage_para = result[0][1]
     passage_para = passage_para.replace(' ', '')
-    test_query_seg = [token for token in jieba.cut(test_query)]
+    test_query_seg = [token for token in jieba.cut(query)]
     paragraph_seg = [token for token in jieba.cut(passage_para)]
     query_ids = [[vocab.get_id(label) for label in test_query_seg]]
     para_ids = [[vocab.get_id(label) for label in paragraph_seg]]
@@ -108,23 +98,57 @@ if __name__ == '__main__':
     query_ids = [(ids + [pad_id] * (pad_q_len - len(ids)))[: pad_q_len] for ids in query_ids]
     para_ids = [(ids + [pad_id] * (pad_p_len - len(ids)))[: pad_p_len] for ids in para_ids]
 
+    print('Feeding data...')
+    feed_dict = {
+        model.q: query_ids,
+        model.p: para_ids,
+        model.q_length: [len(query_ids[0])],
+        model.p_length: [len(para_ids[0])],
+        model.start_label: [0],
+        # rc_model.end_label: [0],
+        model.dropout_keep_prob: 1.0}
+    start_probs, end_probs = model.sess.run([model.start_probs, model.end_probs], feed_dict)
+    # answer_span, max_prob = rc_model.find_best_answer_for_passage(start_probs[0], end_probs[0], len(paragraph_seg))
+    sample = {"passages": [{"passage_tokens": paragraph_seg}]}
+    answer_span = model.find_best_answer(sample, start_probs[0], end_probs[0], len(paragraph_seg))
+    return passage_para, answer_span
+
+
+def main():
+    logger = logging.getLogger('test')
+
+    ir_config = Config()
+    search = Search()
+    args = path_arg4test()
+
+    # load vocab
+    logger.info('Loading vocab...')
+    with open(os.path.join(args.vocab_dir, 'vocab.data'), 'rb') as fin:
+        vocab = pickle.load(fin)
+
     logger.info('Restoring the model...')
     rc_model = RCModel(vocab, args)
     rc_model.restore(model_dir=args.model_dir, model_prefix=args.algo)
 
-    logger.info('Feeding data...')
-    feed_dict = {
-        rc_model.q: query_ids,
-        rc_model.p: para_ids,
-        rc_model.q_length: [len(query_ids[0])],
-        rc_model.p_length: [len(para_ids[0])],
-        rc_model.start_label: [0],
-        # rc_model.end_label: [0],
-        rc_model.dropout_keep_prob: 1.0}
-    start_probs, end_probs = rc_model.sess.run([rc_model.start_probs, rc_model.end_probs], feed_dict)
-    # answer_span, max_prob = rc_model.find_best_answer_for_passage(start_probs[0], end_probs[0], len(paragraph_seg))
-    sample = {"passages": [{"passage_tokens": paragraph_seg}]}
-    answer_span = rc_model.find_best_answer(sample, start_probs[0], end_probs[0], len(paragraph_seg))
-    print("Question: " + test_query)
-    # print("Answer: " + ''.join(token for token in paragraph_seg[answer_span[0]:answer_span[1]]))
-    print("Answer: " + ''.join(token for token in answer_span))
+    logger.info('Demo Testing...')
+
+    query = "围棋有多少颗棋子?"
+
+    while True:
+
+        query = input("您想问什么 >> ")
+
+        if query == 'Q':
+            break
+
+        reference, answer = infer(query, vocab, search, ir_config, args, rc_model)
+        print('Question: ' + query)
+        logger.info('Question: ' + query)
+        print('Reference: ' + reference)
+        logger.info('Reference: ' + reference)
+        print('Answer: ' + answer)
+        logger.info('Answer: ' + answer)
+
+
+if __name__ == '__main__':
+    main()
