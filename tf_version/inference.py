@@ -81,8 +81,25 @@ def path_arg4test():
     return parser.parse_args()
 
 
+def prepare():
+    ir_config = Config()
+    search = Search()
+    args = path_arg4test()
+
+    # load vocab
+    print('Loading vocab...')
+    with open(os.path.join(args.vocab_dir, 'vocab.data'), 'rb') as fin:
+        vocab = pickle.load(fin)
+
+    print('Restoring the model...')
+    rc_model = RCModel(vocab, args)
+    rc_model.restore(model_dir=args.model_dir, model_prefix=args.algo)
+    return vocab, search, ir_config, args, rc_model
+
+
 def infer(query, vocab, search, ir_config, args, model):
     result = search.search_by_question(query, 3, ir_config)
+    passage_title = result[0][0]
     passage_para = result[0][1]
     passage_para = passage_para.replace(' ', '')
     test_query_seg = [token for token in jieba.cut(query)]
@@ -111,24 +128,13 @@ def infer(query, vocab, search, ir_config, args, model):
     # answer_span, max_prob = rc_model.find_best_answer_for_passage(start_probs[0], end_probs[0], len(paragraph_seg))
     sample = {"passages": [{"passage_tokens": paragraph_seg}]}
     answer_span = model.find_best_answer(sample, start_probs[0], end_probs[0], len(paragraph_seg))
-    return passage_para, answer_span
+    return passage_title, passage_para, answer_span
 
 
 def main():
     logger = logging.getLogger('test')
 
-    ir_config = Config()
-    search = Search()
-    args = path_arg4test()
-
-    # load vocab
-    logger.info('Loading vocab...')
-    with open(os.path.join(args.vocab_dir, 'vocab.data'), 'rb') as fin:
-        vocab = pickle.load(fin)
-
-    logger.info('Restoring the model...')
-    rc_model = RCModel(vocab, args)
-    rc_model.restore(model_dir=args.model_dir, model_prefix=args.algo)
+    vocab, search, ir_config, args, rc_model = prepare()
 
     logger.info('Demo Testing...')
 
@@ -141,13 +147,15 @@ def main():
         if query == 'Q':
             break
 
-        reference, answer = infer(query, vocab, search, ir_config, args, rc_model)
+        ref_title, reference, answer = infer(query, vocab, search, ir_config, args, rc_model)
         print('Question: ' + query)
-        logger.info('Question: ' + query)
+        # logger.info('Question: ' + query)
+        print('Reference title:' + ref_title)
+
         print('Reference: ' + reference)
-        logger.info('Reference: ' + reference)
+        # logger.info('Reference: ' + reference)
         print('Answer: ' + answer)
-        logger.info('Answer: ' + answer)
+        # logger.info('Answer: ' + answer)
 
 
 if __name__ == '__main__':
