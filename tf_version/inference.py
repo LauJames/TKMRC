@@ -82,6 +82,10 @@ def path_arg4test():
 
 
 def prepare():
+    """
+    Elasticsearch config preparing, global arguments preparing, vocabulary preparing and model restore preparing.
+    :return:
+    """
     ir_config = Config()
     search = Search()
     args = path_arg4test()
@@ -98,6 +102,16 @@ def prepare():
 
 
 def infer(query, vocab, search, ir_config, args, model):
+    """
+
+    :param query:
+    :param vocab:
+    :param search:
+    :param ir_config:
+    :param args:
+    :param model:
+    :return: passage_title(str), passage_para(str), answer_span(str)
+    """
     result = search.search_by_question(query, 3, ir_config)
     passage_title = result[0][0]
     passage_para = result[0][1]
