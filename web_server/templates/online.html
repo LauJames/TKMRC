@@ -4,16 +4,16 @@
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <meta charset="UTF-8">
 	<title>MRCQA</title>
-	<!--<link rel="stylesheet" type="text/css" href="{{static_url(/static/css/bootstrap-theme.min.css)}}">-->
-	<!--<link rel="stylesheet" type="text/css" href="{{static_url(/static/css/bootstrap.min.css)}}">-->
-	<!--<link rel="stylesheet" type="text/css" href="{{static_url(/static/css/common.css)}}">-->
-	<link rel="stylesheet" type="text/css" href="static/css/bootstrap-theme.min.css">
-	<link rel="stylesheet" type="text/css" href="static/css/bootstrap.min.css">
-	<link rel="stylesheet" type="text/css" href="static/css/common.css">
-	<script src="static/js/jquery.min.js" type="text/javascript"></script>
-	<script src="static/js/bootstrap.min.js" type="text/javascript"></script>
-    <!--<script src="{{static_url(/static/js/jquery.min.js)}}" type="text/javascript"></script>-->
-	<!--<script src="{{static_url(/static/js/bootstrap.min.js)}}" type="text/javascript"></script>-->
+	<link rel="stylesheet" type="text/css" href="{{static_url('css/bootstrap-theme.min.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{static_url('css/bootstrap.min.css')}}">
+	<link rel="stylesheet" type="text/css" href="{{static_url('css/common.css')}}">
+	<!--<link rel="stylesheet" type="text/css" href="static/css/bootstrap-theme.min.css">-->
+	<!--<link rel="stylesheet" type="text/css" href="static/css/bootstrap.min.css">-->
+	<!--<link rel="stylesheet" type="text/css" href="static/css/common.css">-->
+	<!--<script src="static/js/jquery.min.js" type="text/javascript"></script>-->
+	<!--<script src="static/js/bootstrap.min.js" type="text/javascript"></script>-->
+    <script src="{{static_url('js/jquery.min.js')}}" type="text/javascript"></script>
+	<script src="{{static_url('js/bootstrap.min.js')}}" type="text/javascript"></script>
 
 </head>
 
@@ -35,21 +35,21 @@
     			</div><!-- /input-group -->
     		</div>
     		<!--结果展示部分-->
-			<div class="col-md-4 col-md-offset-4" style="margin-top: 20px">
+			<div class="col-md-6 col-md-offset-3" style="margin-top: 20px">
 				<div class="panel panel-info">
 					<div class="panel-heading panel-info">标题</div>
   					<div class="panel-body">
-   						 <p id="ref_title" style="font-size: 15px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;围棋 黑白子 各有 多少 颗 ？</p>
+   						 <p id="ref_title" style="font-size: 15px"></p>
   					</div>
 				</div>
 			</div>
-			<div class="col-md-4 col-md-offset-4" style="margin-top: 20px">
+			<div class="col-md-6 col-md-offset-3" style="margin-top: 20px">
 				<div class="row">
 					<div class="col-md-6">
 						<div class="panel panel-info">
 							<div class="panel-heading panel-info">参考段落</div>
   							<div class="panel-body">
-   						 		<p id="reference" style="font-size: 15px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;本来应该黑白不用19×19那么大，但为了严谨，标准的用于比赛的黑白子是黑181白棋180，一共361，黑比白多1的原因是黑先白后，如果您对我的答案满意请采纳，如果还有什么疑问我来帮您继续解答</p>
+   						 		<p id="reference" style="font-size: 15px"></p>
   							</div>
 						</div>
 					</div>
@@ -57,7 +57,7 @@
 						<div class="panel panel-info">
 							<div class="panel-heading panel-info">答案</div>
   							<div class="panel-body">
-   						 		<p id="answer" style="font-size: 15px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;本来应该黑白不用19×19那么大，但为了严谨，标准的用于比赛的黑白子是黑181白棋180，一共361</p>
+   						 		<p id="answer" style="font-size: 15px"></p>
   							</div>
 						</div>
 					</div>
@@ -109,28 +109,23 @@
 	//提交事件
     $(function() {
         $("#submit").click(function() {
-            var query = $("#query").val;
+            var query = $("#query").val();
+            console.log(query)
             $.ajax({
                 type:"POST",
-                url:"localhost:9002/MRCQA",
+                url:"http://localhost:9002/MRCQA",
                 data:{"query":query},
-                datatype:"text",
-                contentType:"application/x-www-form-urlencoded; charset=utf-8",
+                datatype:"json",
                 success:function(data){
-                    for(var key in data) {
-                    	if(key == "ref_title"){
-                    		var ref_title = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + data[ref_title];
-                    		$("#ref_title").html(ref_title)；
-                    	}
-                    	else if(key == "reference"){
-                    		var reference = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + data[reference];
-                    		$("#reference").html(reference)；
-                    	}
-                    	else(key == "answer"){
-                    		var answer = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + data[answer];
-                    		$("#answer").html(answer)；
-                    	}
-                	}
+                    console.log(data);
+                    getJson_list = $.parseJSON(data);
+                    console.log(getJson_list.ref_title)
+                    var ref_title = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + getJson_list.ref_title;
+                    $("#ref_title").html(ref_title);
+                    var answer = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + getJson_list.answer;
+                    $("#answer").html(answer);
+                    var reference = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + getJson_list.reference;
+                    $("#reference").html(reference);
                 },
                 error:function(){
                     alert("出现问题了");
@@ -138,7 +133,9 @@
             });
         });
     });
-			
+
 </script>
 
 </html>
+
+

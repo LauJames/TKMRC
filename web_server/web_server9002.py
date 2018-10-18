@@ -17,6 +17,10 @@ import tornado.ioloop
 import tornado.web
 import json
 import os
+import sys
+
+curdir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.dirname(curdir))
 
 from tf_version.inference import prepare, infer
 
@@ -87,7 +91,6 @@ def make_app():
         template_path=os.path.join(os.path.dirname(__file__), "templates"),
         static_path=os.path.join(os.path.dirname(__file__), "static"),
     )
-    print(setting)
     return tornado.web.Application([(r'/MRCQA', QAHandler),
                                     # (r'/Answer', AnswerHandler),
                                     (r'/Answer', DemoHandler)
