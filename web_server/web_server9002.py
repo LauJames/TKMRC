@@ -12,9 +12,11 @@
 @Copyright: "Copyright (c) 2018 Lau James. All Rights Reserved"
 """
 
+
 import tornado.ioloop
 import tornado.web
 import json
+import os
 
 from tf_version.inference import prepare, infer
 
@@ -24,7 +26,7 @@ vocab, search, ir_config, args, rc_model = prepare()
 class QAHandler(tornado.web.RequestHandler):
 
     def get(self):
-        self.render('./views/index.html')
+        self.render('index.html')
 
     def post(self):
         self.use_write()
@@ -50,7 +52,7 @@ class QAHandler(tornado.web.RequestHandler):
 
 class AnswerHandler(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
-        self.render('./views/index.html')
+        self.render('index.html')
 
     def post(self, *args, **kwargs):
         self.use_render()
@@ -64,7 +66,7 @@ class AnswerHandler(tornado.web.RequestHandler):
                          'reference': str(reference),
                          'answer': str(answer)}
             print(json_data)
-            self.render('./views/answer.html',
+            self.render('answer.html',
                         question=query,
                         ref_title=json_data['ref_title'],
                         reference=json_data['reference'],
@@ -75,10 +77,23 @@ class AnswerHandler(tornado.web.RequestHandler):
             self.write(json_data)
 
 
+class DemoHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render('online.html')
+
+
 def make_app():
+    setting = dict(
+        template_path=os.path.join(os.path.dirname(__file__), "templates"),
+        static_path=os.path.join(os.path.dirname(__file__), "static"),
+    )
+    print(setting)
     return tornado.web.Application([(r'/MRCQA', QAHandler),
-                                    (r'/Answer', AnswerHandler)
-                                    ])
+                                    # (r'/Answer', AnswerHandler),
+                                    (r'/Answer', DemoHandler)
+                                    ],
+                                   **setting
+                                   )
 
 
 if __name__ == '__main__':
