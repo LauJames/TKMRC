@@ -35,14 +35,14 @@
     			</div><!-- /input-group -->
     		</div>
     		<!--结果展示部分-->
-			<div class="col-md-6 col-md-offset-3" style="margin-top: 20px">
-				<div class="panel panel-info">
-					<div class="panel-heading panel-info">标题</div>
-  					<div class="panel-body">
-   						 <p id="ref_title" style="font-size: 15px"></p>
-  					</div>
-				</div>
-			</div>
+			<!--<div class="col-md-6 col-md-offset-3" style="margin-top: 20px">-->
+				<!--<div class="panel panel-info">-->
+					<!--<div class="panel-heading panel-info">标题</div>-->
+  					<!--<div class="panel-body">-->
+   						 <!--<p id="ref_title" style="font-size: 15px"></p>-->
+  					<!--</div>-->
+				<!--</div>-->
+			<!--</div>-->
 			<div class="col-md-6 col-md-offset-3" style="margin-top: 20px">
 				<div class="row">
 					<div class="col-md-6">
@@ -120,8 +120,8 @@
                     console.log(data);
                     getJson_list = $.parseJSON(data);
                     console.log(getJson_list.ref_title)
-                    var ref_title = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + getJson_list.ref_title;
-                    $("#ref_title").html(ref_title);
+                    // var ref_title = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + getJson_list.ref_title;
+                    // $("#ref_title").html(ref_title);
                     var answer = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + getJson_list.answer;
                     $("#answer").html(answer);
                     var reference = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + getJson_list.reference;
