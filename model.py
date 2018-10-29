@@ -21,6 +21,10 @@ import numpy as np
 import tensorflow as tf
 from utils import compute_bleu_rouge
 from utils import normalize
+from tf_version.layers.basic_rnn import rnn
+from tf_version.layers.match_layer import AttentionFlowMatchLayer
+from tf_version.layers.match_layer import MatchLSTMLayer
+from tf_version.layers.pointer_net import PointerNetDecoder
 
 
 class BiDAF(object):
@@ -31,6 +35,7 @@ class BiDAF(object):
         # logging
         self.logger = logging.getLogger("BiDAF")
 
+        self.algorithm = args.algorithm
         self.hidden_size = args.hidden_size
         self.learning_rate = args.learning_rate
         self.weight_decay = args.weight_decay
@@ -69,4 +74,70 @@ class BiDAF(object):
             self.q_emb = tf.nn.embedding_lookup(self.word_embeddings, self.q)
 
         # Encodding layer
+        # Employs two Bi-LSTM to encode passage and question separately
+        with tf.variable_scope('passage_encoding'):
+            self.sep_p_encodes, _ = rnn('bi-lstm', self.p_emb, self.p_length, self.hidden_size)
+        with tf.variable_scope('question_encoding'):
+            self.sep_q_encodes, _ = rnn('bi-lstm', self.q_emb, self.q_length, self.hidden_size)
+        if self.use_dropout:
+            self.sep_p_encodes = tf.nn.dropout(self.sep_p_encodes, self.dropout_keep_prob)
+            self.sep_q_encodes = tf.nn.dropout(self.sep_q_encodes, self.dropout_keep_prob)
 
+        # Attention Flow Layer: Match
+        # Core part. Get the question-aware passage encoding with either BIDAF
+        if self.algorithm == 'BIDAF':
+            match_layer = AttentionFlowMatchLayer(self.hidden_size)
+        elif self.algorithm == 'MLSTM':
+            match_layer = MatchLSTMLayer(self.hidden_size)
+        else:
+            raise NotImplementedError('The algorithm {} is not implemented or doesn\'t exist at all.'.format(self.algorithm))
+        self.match_p_encodes, _ = match_layer.match(self.sep_p_encodes, self.sep_q_encodes,
+                                                    self.p_length, self.q_length)
+
+        if self.use_dropout:
+            self.match_p_encodes = tf.nn.dropout(self.match_p_encodes, self.dropout_keep_prob)
+
+        # Modeling layer: Fuse
+        # Fuse the context information after match layer using LSTM
+        with tf.variable_scope('fusion'):
+            self.fuse_p_encodes, _ = rnn('bi-lstm', self.match_p_encodes, self.p_length, self.hidden_size, layer_num=1)
+            if self.use_dropout:
+                self.fuse_p_encodes = tf.nn.dropout(self.fuse_p_encodes, self.dropout_keep_prob)
+
+        # Output Layer: decode
+        # Employs Pointer Network to get the porbs of each positon to be the start or end of the predicted answer.
+        with tf.variable_scope('same_question_concat'):
+            batch_size = tf.shape(self.start_label)[0]
+            concat_passage_encodes = tf.reshape(self.fuse_p_encodes,
+                                                [batch_size, -1, 2 * self.hidden_size])
+            no_dup_question_encodes = tf.reshape(self.sep_q_encodes,
+                                                 [batch_size, -1, tf.shape(self.sep_q_encodes)[1], 2 * self.hidden_size])
+
+        decoder = PointerNetDecoder(self.hidden_size)
+        self.start_probs, self.end_probs = decoder.decode(concat_passage_encodes, no_dup_question_encodes)
+
+        # Loss function
+        self.start_loss = self.sparse_nll_loss(probs=self.start_probs, labels=self.start_label)
+        self.end_loss = self.sparse_nll_loss(probs=self.end_probs, labels=self.end_label)
+        self.all_params = tf.trainable_variables()
+        self.loss = tf.reduce_mean(tf.add(self.start_loss, self.end_loss))
+        if self.weight_decay:
+            with tf.variable_scope('l2_loss'):
+                l2_loss = tf.add_n([tf.nn.l2_loss(v) for v in self.all_params])
+            self.loss += self.weight_decay * l2_loss
+
+    @staticmethod
+    def sparse_nll_loss(probs, labels, epsilon=1e-9, scope=None):
+        """
+        negative log likelyhood loss
+        :param probs:
+        :param labels:
+        :param eps:
+        :param scope:
+        :return:
+        """
+        with tf.variable_scope(scope, 'log_loss'):
+            labels = tf.one_hot(labels, tf.shape(probs)[1], axis=1)
+            losses = - tf.reduce_sum(labels * tf.log(probs + epsilon), 1)
+
+        return losses
