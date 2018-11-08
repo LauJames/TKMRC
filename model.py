@@ -37,6 +37,8 @@ class BiDAF(object):
 
         self.algorithm = args.algorithm
         self.hidden_size = args.hidden_size
+        self.optim_type = args.optim
+        self.l2_norm = args.l2_norm
         self.learning_rate = args.learning_rate
         self.weight_decay = args.weight_decay
         self.use_dropout = args.dropout_keep_prob < 1
@@ -117,27 +119,42 @@ class BiDAF(object):
         self.start_probs, self.end_probs = decoder.decode(concat_passage_encodes, no_dup_question_encodes)
 
         # Loss function
-        self.start_loss = self.sparse_nll_loss(probs=self.start_probs, labels=self.start_label)
-        self.end_loss = self.sparse_nll_loss(probs=self.end_probs, labels=self.end_label)
-        self.all_params = tf.trainable_variables()
+        self.start_loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.start_probs,
+                                                                         labels=self.start_label)
+        self.end_loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.end_probs,
+                                                                       labels=self.end_label)
         self.loss = tf.reduce_mean(tf.add(self.start_loss, self.end_loss))
+
+        # L2 regularization
+        # self.all_params = tf.trainable_variables()
+        if self.l2_norm:
+            self.variables = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+            l2_loss = tf.contrib.layers.apply_regularization(tf.contrib.layers.l2_regularizer(scale=3e-7))
+            self.loss += l2_loss
+        # Learning rate decay
         if self.weight_decay:
-            with tf.variable_scope('l2_loss'):
-                l2_loss = tf.add_n([tf.nn.l2_loss(v) for v in self.all_params])
-            self.loss += self.weight_decay * l2_loss
+            self.var_ema = tf.train.ExponentialMovingAverage(self.weight_decay)
+            # Maintains moving averages of all trainable variables
+            ema_op = self.var_ema.apply(tf.trainable_variables())
+            with tf.control_dependencies([ema_op]):
+                self.loss = tf.identity(self.loss)
 
-    @staticmethod
-    def sparse_nll_loss(probs, labels, epsilon=1e-9, scope=None):
-        """
-        negative log likelyhood loss
-        :param probs:
-        :param labels:
-        :param eps:
-        :param scope:
-        :return:
-        """
-        with tf.variable_scope(scope, 'log_loss'):
-            labels = tf.one_hot(labels, tf.shape(probs)[1], axis=1)
-            losses = - tf.reduce_sum(labels * tf.log(probs + epsilon), 1)
+                self.assign_vars = []
+                for var in tf.global_variables():
+                    v = self.var_ema.average(var)
+                    if v:
+                        self.assign_vars.append(tf.assign(var, v))
 
-        return losses
+        # Optimization method
+        if self.optim_type == 'adagrad':
+            self.optimizer = tf.train.AdagradOptimizer(self.learning_rate)
+        elif self.optim_type == 'adam':
+            self.optimizer = tf.train.AdamOptimizer(self.learning_rate)
+        elif self.optim_type == 'rprop':
+            self.optimizer == tf.train.RMSPropOptimizer(self.learning_rate)
+        elif self.optim_type == 'sgd':
+            self.optimizer == tf.train.GradientDescentOptimizer(self.learning_rate)
+        else:
+            raise NotImplementedError('Unsupported optimizer: {}'.format(self.optim_type))
+        self.train_op = self.optimizer.minimize(self.loss)
+
