@@ -125,18 +125,21 @@ class BiDAF(object):
                                                                        labels=self.end_label)
         self.loss = tf.reduce_mean(tf.add(self.start_loss, self.end_loss))
 
+        # regularization method:
         # L2 regularization
         # self.all_params = tf.trainable_variables()
         if self.l2_norm:
             self.variables = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
-            l2_loss = tf.contrib.layers.apply_regularization(tf.contrib.layers.l2_regularizer(scale=3e-7))
+            l2_loss = tf.contrib.layers.apply_regularization(tf.contrib.layers.l2_regularizer(scale=3e-7),
+                                                             self.variables)
             self.loss += l2_loss
-        # Learning rate decay
+        # weight decay
         if self.weight_decay:
             self.var_ema = tf.train.ExponentialMovingAverage(self.weight_decay)
             # Maintains moving averages of all trainable variables
             ema_op = self.var_ema.apply(tf.trainable_variables())
             with tf.control_dependencies([ema_op]):
+                # 应用指数平滑的weight decay之后，再更新loss
                 self.loss = tf.identity(self.loss)
 
                 self.assign_vars = []
@@ -144,6 +147,7 @@ class BiDAF(object):
                     v = self.var_ema.average(var)
                     if v:
                         self.assign_vars.append(tf.assign(var, v))
+        # end of regularization
 
         # Optimization method
         if self.optim_type == 'adagrad':
