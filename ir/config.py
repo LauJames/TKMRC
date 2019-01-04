@@ -19,12 +19,14 @@ class Config(object):
     def __init__(self):
         print("config...")
         self.es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
-        self.index_name = "mrc"
+        # self.index_name = "mrc"
+        # self.doc_type = "paragraph"
+        self.index_name = "tkmrc2"
         self.doc_type = "paragraph"
         # test
         # file_path = "../data/DuReaderDemo/search.dev.json"
-        file_path = '../data/mergeData/merge.all.json'
-        self.doc_path = file_path
+        # file_path = '../data/mergeData/merge.all.json'
+        # self.doc_path = file_path
 
 
 def main():
